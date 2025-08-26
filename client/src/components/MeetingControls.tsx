@@ -7,6 +7,7 @@ import React from "react";
 interface MeetingControlsProps {
   setMeetingId: (meetingId: string | null) => void;
 }
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const MeetingControls = ({ setMeetingId }: MeetingControlsProps) => {
   const { end, meetingId } = useMeeting();
