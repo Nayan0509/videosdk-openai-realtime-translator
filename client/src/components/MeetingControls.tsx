@@ -7,7 +7,7 @@ import React from "react";
 interface MeetingControlsProps {
   setMeetingId: (meetingId: string | null) => void;
 }
-
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL;
 const MeetingControls = ({ setMeetingId }: MeetingControlsProps) => {
   const { end, meetingId } = useMeeting();
   const { token, aiJoined, setAiJoined } = useMeetingStore();
@@ -15,7 +15,7 @@ const MeetingControls = ({ setMeetingId }: MeetingControlsProps) => {
 
   const inviteAI = async () => {
     try {
-      const response = await fetch("http://localhost:8000/join-player", {
+        const response = await fetch(`${API_BASE_URL}/join-player`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
