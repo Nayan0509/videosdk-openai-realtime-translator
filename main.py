@@ -5,6 +5,9 @@ from fastapi import FastAPI, BackgroundTasks
 from pydantic import BaseModel
 from agent.ai_agent import AIAgent
 import asyncio
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+import os
 
 port = 8000
 app = FastAPI()
@@ -16,6 +19,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+frontend_dist = os.path.join(os.path.dirname(__file__), "client", "dist")
+
+# serve /assets (vite’s output)
+if os.path.exists(frontend_dist):
+    app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, "assets")), name="assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_react_app(full_path: str):
+        return FileResponse(os.path.join(frontend_dist, "index.html"))
 
 ai_agent = None
 
