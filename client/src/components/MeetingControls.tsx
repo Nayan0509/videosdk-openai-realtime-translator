@@ -7,7 +7,7 @@ import React from "react";
 interface MeetingControlsProps {
   setMeetingId: (meetingId: string | null) => void;
 }
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL;
+
 const MeetingControls = ({ setMeetingId }: MeetingControlsProps) => {
   const { end, meetingId } = useMeeting();
   const { token, aiJoined, setAiJoined } = useMeetingStore();
@@ -40,6 +40,28 @@ const MeetingControls = ({ setMeetingId }: MeetingControlsProps) => {
     setTimeout(() => setIsCopied(false), 2000);
   };
 
+  const endMeeting = async () => {
+    try {
+      // End the OpenAI session if AI was joined
+      if (aiJoined) {
+        await fetch(`${API_BASE_URL}/leave-player`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        setAiJoined(false);
+      }
+    } catch (error) {
+      console.error("Error ending AI session:", error);
+      // Continue with meeting end even if AI cleanup fails
+    } finally {
+      // End the meeting
+      end();
+      setMeetingId(null);
+    }
+  };
+
   return (
     <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/90 to-transparent">
       <div className="max-w-md mx-auto flex items-center justify-center space-x-4">
@@ -66,10 +88,7 @@ const MeetingControls = ({ setMeetingId }: MeetingControlsProps) => {
         )}
 
         <button
-          onClick={() => {
-            end();
-            setMeetingId(null);
-          }}
+          onClick={endMeeting}
           className="p-4 rounded-full bg-red-500 hover:bg-red-600 transition-colors"
         >
           <PhoneOff className="w-6 h-6 text-white transform rotate-225" />

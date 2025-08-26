@@ -29,7 +29,7 @@ class OpenAIIntelligence:
         self,
         loop: AbstractEventLoop,
         api_key,
-        model: str = "gpt-4o-realtime-preview-2024-10-01",
+        model: str = "gpt-4o-mini-realtime-preview-2024-12-17",
         instructions="""\
             Actively listen to the user's questions and provide concise, relevant responses. 
             Acknowledge the user's intent before answering. Keep responses under 2 sentences.\
@@ -92,7 +92,7 @@ class OpenAIIntelligence:
 
     async def connect(self):
         # url = f"wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17"
-        url = f"wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview"
+        url = f"wss://api.openai.com/v1/realtime?model=gpt-4o-mini-realtime-preview-2024-12-17"
         logger.info("Establishing OpenAI WS connection... ")
         print("[OpenAI] init: connecting to", url)
         self.ws = await self._http_session.ws_connect(
@@ -210,3 +210,34 @@ class OpenAIIntelligence:
             case EventType.ERROR:
                 print(message)
                 logger.error(f"Server Error Message: ", message["error"])
+
+    async def disconnect(self):
+        """
+        Properly disconnect from OpenAI WebSocket and cleanup resources
+        """
+        print("[OpenAI] Disconnecting from OpenAI session...")
+
+        try:
+            # Cancel the receive message task if it exists
+            if hasattr(self, 'receive_message_task') and self.receive_message_task:
+                self.receive_message_task.cancel()
+                try:
+                    await self.receive_message_task
+                except asyncio.CancelledError:
+                    pass
+
+            # Close WebSocket connection
+            if self.ws and not self.ws.closed:
+                await self.ws.close()
+                print("[OpenAI] WebSocket connection closed")
+
+            # Close HTTP session
+            if self._http_session and not self._http_session.closed:
+                await self._http_session.close()
+                print("[OpenAI] HTTP session closed")
+
+        except Exception as e:
+            print(f"[OpenAI] Error during disconnect: {e}")
+        finally:
+            self.ws = None
+            print("[OpenAI] OpenAI session cleanup completed")

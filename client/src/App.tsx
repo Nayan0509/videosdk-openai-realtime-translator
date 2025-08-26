@@ -28,7 +28,32 @@ interface MeetingViewProps {
 
 const MeetingView = ({ setMeetingId }: MeetingViewProps) => {
   const { participants } = useMeeting();
-  const { aiJoined: _aiJoined } = useMeetingStore();
+  const { aiJoined, setAiJoined } = useMeetingStore();
+
+  // Handle browser/tab close to cleanup OpenAI session
+  React.useEffect(() => {
+    const handleBeforeUnload = async (event: BeforeUnloadEvent) => {
+      if (aiJoined) {
+        // Try to cleanup OpenAI session before page unload
+        try {
+          await fetch(`${API_BASE_URL}/leave-player`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+        } catch (error) {
+          console.error("Error cleaning up AI session on page unload:", error);
+        }
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [aiJoined]);
 
   const isAIParticipant = (participantId: string) => {
     const participant = participants.get(participantId);

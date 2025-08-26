@@ -85,7 +85,9 @@ class AIAgent:
         asyncio.create_task(self.intelligence.connect())
 
     def on_meeting_left(self, data):
-        print(f"Meeting Left")
+        print(f"Meeting Left - Ending OpenAI session")
+        # Disconnect from OpenAI when meeting ends
+        asyncio.create_task(self.intelligence.disconnect())
 
     def on_participant_joined(self, participant: Participant):
         peer_name = participant.display_name
@@ -154,8 +156,27 @@ class AIAgent:
     def on_participant_left(self, participant: Participant):
         print("Participant left:", participant.display_name)
 
+        # Remove participant from our data
+        if participant.id in self.participants_data:
+            del self.participants_data[participant.id]
+
+        # If all participants have left (only AI agent remains), end OpenAI session
+        if len(self.participants_data) == 0:
+            print("All participants left - Ending OpenAI session")
+            asyncio.create_task(self.intelligence.disconnect())
+
     async def join(self):
         await self.agent.async_join()
 
     def leave(self):
+        print("AI Agent leaving meeting - Cleaning up resources")
+        # Cancel all audio listener tasks
+        for task in self.audio_listener_tasks.values():
+            if task and not task.done():
+                task.cancel()
+
+        # Disconnect from OpenAI
+        asyncio.create_task(self.intelligence.disconnect())
+
+        # Leave the meeting
         self.agent.leave()

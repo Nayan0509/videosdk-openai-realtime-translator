@@ -5,9 +5,6 @@ from fastapi import FastAPI, BackgroundTasks
 from pydantic import BaseModel
 from agent.ai_agent import AIAgent
 import asyncio
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-import os
 
 port = 8000
 app = FastAPI()
@@ -19,16 +16,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-frontend_dist = os.path.join(os.path.dirname(__file__), "client", "dist")
-
-# serve /assets (vite’s output)
-if os.path.exists(frontend_dist):
-    app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, "assets")), name="assets")
-
-    @app.get("/{full_path:path}")
-    async def serve_react_app(full_path: str):
-        return FileResponse(os.path.join(frontend_dist, "index.html"))
 
 ai_agent = None
 
@@ -65,6 +52,17 @@ async def test():
 async def join_player(req: MeetingReqConfig, bg_tasks: BackgroundTasks):
     bg_tasks.add_task(server_operations, req)
     return {"message": "AI agent joined"}
+
+# leave ai agent and end OpenAI session
+@app.post("/leave-player")
+async def leave_player():
+    global ai_agent
+    if ai_agent:
+        ai_agent.leave()
+        ai_agent = None
+        return {"message": "AI agent left and OpenAI session ended"}
+    else:
+        return {"message": "No AI agent to leave"}
 
 
 # runnning the server on port : 8000
