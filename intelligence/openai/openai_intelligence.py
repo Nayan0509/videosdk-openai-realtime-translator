@@ -172,6 +172,7 @@ class OpenAIIntelligence:
     def clear_audio_queue(self):
         pass
 
+    #Response   
     def on_audio_response(self, audio_bytes: bytes):
         self.loop.create_task(self.audio_track.add_new_bytes(iter([audio_bytes])))
 
