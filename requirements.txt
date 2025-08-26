@@ -1,0 +1,12 @@
+uvicorn
+fastapi
+videosdk
+numpy
+httpx
+librosa==0.10.2
+numba>=0.57.0
+llvmlite>=0.40.0
+aiohttp
+pyee==9.1.1
+grpcio-tools
+python-dotenv
