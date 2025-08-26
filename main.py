@@ -17,6 +17,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Serve frontend static files
+app.mount("/static", StaticFiles(directory="client/dist/static"), name="static")
+
+@app.get("/{full_path:path}")
+async def serve_react_app(full_path: str):
+    file_path = os.path.join("client", "dist", "index.html")
+    return FileResponse(file_path)
+ai_agent = None
+
 ai_agent = None
 
 
