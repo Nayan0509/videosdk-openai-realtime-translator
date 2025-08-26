@@ -20,14 +20,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve frontend static files
-app.mount("/static", StaticFiles(directory="client/dist/static"), name="static")
+frontend_dist = os.path.join(os.path.dirname(__file__), "client", "dist")
 
-@app.get("/{full_path:path}")
-async def serve_react_app(full_path: str):
-    file_path = os.path.join("client", "dist", "index.html")
-    return FileResponse(file_path)
-ai_agent = None
+# serve /assets (vite’s output)
+if os.path.exists(frontend_dist):
+    app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, "assets")), name="assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_react_app(full_path: str):
+        return FileResponse(os.path.join(frontend_dist, "index.html"))
 
 ai_agent = None
 
