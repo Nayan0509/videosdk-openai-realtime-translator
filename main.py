@@ -5,6 +5,9 @@ from fastapi import FastAPI, BackgroundTasks
 from pydantic import BaseModel
 from agent.ai_agent import AIAgent
 import asyncio
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+import os
 
 port = 8000
 app = FastAPI()
