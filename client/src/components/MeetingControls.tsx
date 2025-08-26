@@ -15,7 +15,7 @@ const MeetingControls = ({ setMeetingId }: MeetingControlsProps) => {
 
   const inviteAI = async () => {
     try {
-        const response = await fetch(`${API_BASE_URL}/join-player`, {
+        const response = await fetch(`${API_BASE_URL}join-player`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
